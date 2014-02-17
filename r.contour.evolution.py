@@ -35,7 +35,7 @@
 #% type: integer
 #% label: Years
 #% description: Must be same count of rasters
-#% multiple: no
+#% multiple: yes
 #% required: yes
 #%end
 #%option
