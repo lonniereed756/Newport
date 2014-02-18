@@ -64,13 +64,16 @@ from grass.script.raster import mapcalc as rmapcalc
 options, flags = gcore.parser()
 elevations = options['raster'].split(',')
 years = options['years'].split(',')
-level =float(options['level'])
+level = float(options['level'])
 
+# you have to delete old maps manualy now:
+#  g.mremove rast="*rcontourevolution_*" vect="*rcontourevolution_*" -f
 
 #def create_tmp_map_name(name):
 #    return '{mod}_{pid}_{map_}_tmp'.format(mod='rcontourevolution',
 #                                           pid=os.getpid(),
 #                                           map_=name)
+
 
 def create_tmp_map_name(name):
     return '{mod}_{map_}'.format(mod='rcontourevolution',
@@ -129,7 +132,7 @@ run_command('r.slope.aspect', elevation=stc_surface_decreasing_elevation,
             format='degrees', precision='FCELL',
             zfactor=1.0, min_slp_allowed=0.0)
 # invert slope to have higher values where slope is lower
-# to avoid negative values subtract from global max instead of 0 
+# to avoid negative values subtract from global max instead of 0
 # TODO: some other "inversion" might be better
 stc_surface_stats = parse_command('r.univar', map=stc_surface_decreasing_slope,
                                   flags='g')
@@ -137,5 +140,6 @@ rmapcalc('%s = %s - %s' % (stc_surface_decreasing_slope_inverted,
                            stc_surface_stats['max'],
                            stc_surface_decreasing_slope))
 
-# in GUI, add a raster flow layer
-# d.rast.arrow map=elev_1999_2007_contours_14_surface_aspect arrow_color=black grid_color=none skip=3 scale=2 magnitude_map=elev_1999_2007_contours_14_surface_slope_inv
+# in GUI, add a raster flow layer:
+#  d.rast.arrow map=aspect magnitude_map=slope \
+#    arrow_color=black grid_color=none skip=3 scale=2
