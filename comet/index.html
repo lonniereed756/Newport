@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/Map" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css"/>
+</head>
+<body>
+
+    <!--[if lte IE 8]><p id="warn">Please upgrade to IE9 or newer.</p><![endif]-->
+
+    <div id="display" data-topography="/data/tokyo-topo.json" data-samples="/data/wind/current"
+                      data-type="wind" data-date="">
+        <!--<div id="map">
+            <svg id="map-svg" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
+        </div>-->
+        <div id="field">
+            <canvas id="field-canvas"></canvas>
+        </div>
+    </div>
+    
+    <script charset="utf-8">
+	// support python default nan string representation
+	nan = Number.NaN;
+    </script>
+    <script src="js/d3.v3.js" charset="utf-8"></script>
+    <script src="columns_asp.js" charset="utf-8"></script>
+    <script src="js/myair.js" charset="utf-8"></script>
+</body>
+</html>
