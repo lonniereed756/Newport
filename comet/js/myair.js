@@ -172,9 +172,13 @@ function animate(settings, field) {
             var pointCount = w[w.length - 1];
 
             return function(o) {
-		o.x = Math.floor(rand(0, settings.displayBounds.width));
-		o.y = Math.floor(rand(0, settings.displayBounds.height));
-		return o;
+		while (true) {
+		    o.x = Math.floor(rand(0, settings.displayBounds.width));
+		    o.y = Math.floor(rand(0, settings.displayBounds.height));
+		    if (rand(0, 1) < probabilityMap[o.x][o.y])
+			return o;
+		}
+		// disabled code below
                 var p = Math.floor(rand(0, pointCount));  // choose random point index
                 var x = binarySearch(w, p);  // find column that contains this point
                 x = x < 0 ? -x - 2 : x;  // when negative, x refers to _following_ column, so flip and go back one

@@ -39,6 +39,21 @@ Created on Sat Mar 29 18:29:03 2014
 @author: Vaclav Petras, <wenzeslaus gmail com>
 """
 
+# r.recode -d --overwrite input=landcover_1m@PERMANENT output=probability rules=/home/vasek/grassdata/nc_spm_08_grass7/PERMANENT/.tmp/vubu32/20122.1
+# 1:1:1
+# 2:2:0.1
+# 3:3:1
+# 4:4:1
+# 5:5:1
+# 6:6:1
+# 7:7:1
+# 8:8:1
+# 9:9:1
+# 10:10:1
+# 11:11:0.1
+
+# python ./r.out.js.py --help > columns_asp.js
+
 import math
 import numpy
 from grass.pygrass.raster import RasterRow
@@ -85,3 +100,25 @@ for i in range(ncols):
     columns.append('[' + ','.join(column) + ']\n')
 
 print 'columns = ' + '[' + ','.join(columns) + ']'
+
+probability = RasterRow('probability')
+
+probability.open()
+
+rows = []
+for prob_row in probability:
+    row = []
+    for prob_cell in prob_row:
+        row.append(str(prob_cell))
+    rows.append(row)
+
+ncols = len(rows[0])
+
+columns = []
+for i in range(ncols):
+    column = []
+    for row in rows:
+        column.append(row[i])
+    columns.append('[' + ','.join(column) + ']\n')
+
+print 'probabilityMap = ' + '[' + ','.join(columns) + ']'
