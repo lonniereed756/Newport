@@ -175,7 +175,9 @@ function animate(settings, field) {
 		while (true) {
 		    o.x = Math.floor(rand(0, settings.displayBounds.width));
 		    o.y = Math.floor(rand(0, settings.displayBounds.height));
-		    if (rand(0, 1) < probabilityMap[o.x][o.y])
+		    if (probabilityMap && rand(0, 1) < probabilityMap[o.x][o.y])
+			return o;
+		    else
 			return o;
 		}
 		// disabled code below
