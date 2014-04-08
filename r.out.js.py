@@ -23,12 +23,38 @@
 #% keywords: web
 #%end
 #%option G_OPT_R_INPUT
+#% key: direction
+#% label: Name(s) of input raster map(s)
+#% description: Either this or strds option must be used to specify the input.
+#% multiple: no
+#% required: yes
+#%end
+#%option G_OPT_R_INPUT
+#% key: probability
+#% label: Name(s) of input raster map(s)
+#% description: Either this or strds option must be used to specify the input.
+#% multiple: no
+#% required: no
+#%end
+#%option G_OPT_R_INPUT
+#% key: magnitude
+#% label: Name(s) of input raster map(s)
+#% description: Either this or strds option must be used to specify the input.
 #% multiple: no
 #% required: yes
 #%end
 #%option G_OPT_F_OUTPUT
 #% multiple: no
 #% required: yes
+#%end
+#%option
+#% key: scale
+#% type: double
+#% label: Years
+#% description: Must be same count of rasters
+#% multiple: no
+#% required: no
+#% answer: 1
 #%end
 
 
@@ -56,6 +82,7 @@ Created on Sat Mar 29 18:29:03 2014
 
 import math
 import numpy
+import grass.script.core as gcore
 from grass.pygrass.raster import RasterRow
 #
 #with RasterRow('aspect') as elev:
@@ -65,9 +92,15 @@ from grass.pygrass.raster import RasterRow
 #            l.append(str(cell))
 #        print ' '.join(l)
 
+options, flags = gcore.parser()
 
-direction = RasterRow('elev_lid_aspect')
-speed = RasterRow('elev_lid_slope')
+direction = options['direction']
+magnitude = options['magnitude']
+probability = options['magnitude']
+scale = float(options['scale'])
+
+direction = RasterRow(direction)
+speed = RasterRow(magnitude)
 
 direction.open()
 speed.open()
@@ -78,9 +111,9 @@ for i, dir_row in enumerate(direction):
     vectors = []
     for j, dir_cell in enumerate(dir_row):
         speed_cell = speed_row[j]
-        dx = numpy.cos(dir_cell / 180. * math.pi) * speed_cell
-        dy = - numpy.sin(dir_cell / 180. * math.pi) * speed_cell
-        m = speed_cell
+        dx = numpy.cos(dir_cell / 180. * math.pi) * speed_cell * scale
+        dy = - numpy.sin(dir_cell / 180. * math.pi) * speed_cell * scale
+        m = speed_cell * scale
         #dx = 5;
         #dy = 0;
         vectors.append('[' + ','.join([str(dx), str(dy), str(m)]) + ']')
@@ -101,24 +134,27 @@ for i in range(ncols):
 
 print 'columns = ' + '[' + ','.join(columns) + ']'
 
-probability = RasterRow('probability')
+if probability:
+    probability = RasterRow(probability)
 
-probability.open()
+    probability.open()
 
-rows = []
-for prob_row in probability:
-    row = []
-    for prob_cell in prob_row:
-        row.append(str(prob_cell))
-    rows.append(row)
+    rows = []
+    for prob_row in probability:
+	row = []
+	for prob_cell in prob_row:
+	    row.append(str(prob_cell))
+	rows.append(row)
 
-ncols = len(rows[0])
+    ncols = len(rows[0])
 
-columns = []
-for i in range(ncols):
-    column = []
-    for row in rows:
-        column.append(row[i])
-    columns.append('[' + ','.join(column) + ']\n')
+    columns = []
+    for i in range(ncols):
+	column = []
+	for row in rows:
+	    column.append(row[i])
+	columns.append('[' + ','.join(column) + ']\n')
 
-print 'probabilityMap = ' + '[' + ','.join(columns) + ']'
+    print 'probabilityMap = ' + '[' + ','.join(columns) + ']'
+else:
+    print 'probabilityMap = null;'
