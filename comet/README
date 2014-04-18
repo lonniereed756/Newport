@@ -1,0 +1,5 @@
+This project is licensed under GNU General Public License, version 2 or higher.
+
+This application is based on air.js file from a project to visualize
+Tokyo wind and air pollutants (https://github.com/cambecc/air, http://air.nullschool.net).
+See air_license.txt for the original license.
