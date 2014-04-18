@@ -1,0 +1,10 @@
+#field {
+    background-image: url(cost_gray_lake_gray_blue_point.png);
+    background-repeat: no-repeat;
+    background-size: 542px 445px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
