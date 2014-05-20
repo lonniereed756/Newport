@@ -111,6 +111,8 @@ for i, dir_row in enumerate(direction):
     vectors = []
     for j, dir_cell in enumerate(dir_row):
         speed_cell = speed_row[j]
+        if speed_cell < 0:
+            speed_cell = 0
         dx = numpy.cos(dir_cell / 180. * math.pi) * speed_cell * scale
         dy = - numpy.sin(dir_cell / 180. * math.pi) * speed_cell * scale
         m = speed_cell * scale
