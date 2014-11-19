@@ -81,6 +81,7 @@ def create_tmp_map_name(name):
                                  map_=name)
 
 contours_level_points_stcs = []
+contours_level_stcs = []
 
 # create contours from elevation for each year
 for i, elevation in enumerate(elevations):
@@ -98,6 +99,7 @@ for i, elevation in enumerate(elevations):
     # TODO: would it be possible to extract contours without attribute table?
     run_command('v.extract', input=contours, where='level=%f' % level,
                 output=contours_level)
+    contours_level_stcs.append(contours_level)
     # convert contour line to (dense enough) set of points
     run_command('v.to.points', input=contours_level,
                 output=contours_level_points, dmax=1)
@@ -108,6 +110,7 @@ for i, elevation in enumerate(elevations):
 
 # create names for temporary maps
 stc_surface_increasing_points = create_tmp_map_name('stc_surface_increasing_points')
+stc_surface_increasing_countours = create_tmp_map_name('stc_surface_increasing_countours')
 stc_surface_increasing_elevation = create_tmp_map_name('stc_surface_increasing_elevation')
 stc_surface_increasing_slope = create_tmp_map_name('stc_surface_increasing_slope')
 stc_surface_increasing_aspect = create_tmp_map_name('stc_surface_increasing_aspect')
@@ -126,6 +129,13 @@ run_command('v.surf.rst', input=stc_surface_increasing_points,
             elevation=stc_surface_increasing_elevation,
             slope=stc_surface_increasing_slope,
             aspect=stc_surface_increasing_aspect)
+
+# patch the contours for visualization
+# alternative is to compute contours on the surface but these are the contours
+# which we actually want (surface can be distorted)
+# and it is faster too
+run_command('v.patch', input=contours_level_stcs,
+            output=stc_surface_increasing_countours)
 
 # invert surface to have time going down the hill
 #rmapcalc('%s = -%s' % (stc_surface_decreasing_elevation, stc_surface_increasing_elevation))
@@ -178,6 +188,7 @@ run_command('r.null', map=mask, setnull=0)
 # here it would be much better to have distance in number of cells
 # manual and default value adds 0.01 at the end
 # works with C version of r.grow
+# TODO: move C r.grow to addons as r.grow.shrink and use it here
 # this will remove small null areas (5) and then get to the old state and apply buffer (3)
 run_command('r.grow', input=mask, output=buffered_mask_intermediate, radius=5.01)
 run_command('r.grow', input=buffered_mask_intermediate, output=buffered_mask, radius=-7.01)
