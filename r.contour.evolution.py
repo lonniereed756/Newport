@@ -182,8 +182,22 @@ run_command('r.null', map=mask, setnull=0)
 run_command('r.grow', input=mask, output=buffered_mask_intermediate, radius=5.01)
 run_command('r.grow', input=buffered_mask_intermediate, output=buffered_mask, radius=-7.01)
 
-
-
 # in GUI, add a raster flow layer:
 #  d.rast.arrow map=aspect magnitude_map=slope \
 #    arrow_color=black grid_color=none skip=3 scale=2
+
+speed_masked = create_tmp_map_name('speed_masked')
+direction_masked = create_tmp_map_name('direction_masked')
+
+mask_expression = []
+mask_template = '{target} = if({mask}, {source}, null())'
+mask_expression.append(
+    mask_template.format(
+        source=speed, target=speed_masked, mask=buffered_mask))
+mask_expression.append(
+    mask_template.format(
+        source=direction, target=direction_masked, mask=buffered_mask))
+
+rmapcalc('\n'.join(mask_expression))
+
+run_command('r.colors', flags='e', color='sepia', map=speed_masked)
