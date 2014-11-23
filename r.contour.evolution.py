@@ -194,11 +194,9 @@ run_command('r.null', map=mask, setnull=0)
 
 # here it would be much better to have distance in number of cells
 # manual and default value adds 0.01 at the end
-# works with C version of r.grow
-# TODO: move C r.grow to addons as r.grow.shrink and use it here
-# this will remove small null areas (5) and then get to the old state and apply buffer (3)
-run_command('r.grow', input=mask, output=buffered_mask_intermediate, radius=5.01)
-run_command('r.grow', input=buffered_mask_intermediate, output=buffered_mask, radius=-7.01)
+# this will remove small null areas (2) and then get to the old state and apply buffer (-2)
+run_command('r.grow.shrink', input=mask, output=buffered_mask_intermediate, radius=2.01)
+run_command('r.grow.shrink', input=buffered_mask_intermediate, output=buffered_mask, radius=-4.01)
 
 # in GUI, add a raster flow layer:
 #  d.rast.arrow map=aspect magnitude_map=slope \
