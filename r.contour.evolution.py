@@ -89,8 +89,10 @@ for i, elevation in enumerate(elevations):
     contours = create_tmp_map_name(elevation + '_contours')
     level_str = str(level).replace('.', '_')
     contours_level = create_tmp_map_name(elevation + '_contours_level_' + level_str)
+    contours_level_generalized = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_generalized')
     contours_level_points = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_points')
     contours_level_points_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_points_stc')
+    contours_level_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_stc')
 
     # now it wold be enough to just compute one level but we will
     # eventually compute multiple levels anyway
@@ -99,14 +101,19 @@ for i, elevation in enumerate(elevations):
     # TODO: would it be possible to extract contours without attribute table?
     run_command('v.extract', input=contours, where='level=%f' % level,
                 output=contours_level)
-    contours_level_stcs.append(contours_level)
-    # convert contour line to (dense enough) set of points
-    run_command('v.to.points', input=contours_level,
-                output=contours_level_points, dmax=1)
+    # r.contour vertexes are too dense, generalize using some empirical values
+    run_command('v.generalize', input=contours_level, output=contours_level_generalized,
+                method='douglas', threshold=0.5)
+    # convert contour line to set of points using vertexes
+    run_command('v.to.points', input=contours_level_generalized,
+                output=contours_level_points, use='vertex')
     # discard z coordinate (-t flag) and assign time to z (Space Time Cube)
     run_command('v.transform', flags='t', input=contours_level_points,
                 output=contours_level_points_stc, zshift=years[i])
     contours_level_points_stcs.append(contours_level_points_stc)
+    run_command('v.transform', flags='t', input=contours_level_generalized,
+                output=contours_level_stc, zshift=years[i])
+    contours_level_stcs.append(contours_level_stc)
 
 # create names for temporary maps
 stc_surface_increasing_points = create_tmp_map_name('stc_surface_increasing_points')
