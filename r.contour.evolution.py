@@ -157,7 +157,7 @@ run_command('v.patch', input=contours_level_stcs,
 # invert slope to have higher values where slope is lower
 # to avoid negative values subtract from global max instead of 0
 # using 90 as maximum slope possible
-rmapcalc('{speed} = 1. / tan({slope})'.format(speed=speed,
+rmapcalc('eval(t = 1. / tan({slope}))\n{speed} = if(t > 15, 15, t)'.format(speed=speed,
                               slope=stc_surface_increasing_slope))
 
 rmapcalc('eval(f = 180 + {a})\n{d} = if(f > 360, f - 360, f)'.format(d=direction, a=stc_surface_increasing_aspect))
