@@ -1,0 +1,34 @@
+#field {
+    background-size: 169px 162px;
+    background-repeat: no-repeat;
+    animation:mymove 10s infinite;
+    -webkit-animation:mymove 10s infinite; /* Safari and Chrome */
+}
+
+@keyframes mymove {
+    0%    {background-image: url(state_1.png);}
+    33%  {background-image: url(state_2.png);}
+    66%  {background-image: url(state_3.png);}
+    100%  {background-image: url(state_4.png);}
+}
+
+@-webkit-keyframes mymove /* Safari and Chrome */ {
+    0%    {background-image: url(state_1.png);}
+    25%  {background-image: url(state_2.png);}
+    50%  {background-image: url(state_3.png);}
+    75%  {background-image: url(state_4.png);}
+    100%    {background-image: url(state_1.png);}
+}
+
+/*
+#field {
+    background-image: url(state_2.png);
+    background-repeat: no-repeat;
+    background-size: 319px 283px;
+}
+* */
+
+* {
+    margin: 0;
+    padding: 0;
+}
