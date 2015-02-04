@@ -121,6 +121,8 @@ stc_surface_increasing_countours = create_tmp_map_name('stc_surface_increasing_c
 stc_surface_increasing_elevation = create_tmp_map_name('stc_surface_increasing_elevation')
 stc_surface_increasing_slope = create_tmp_map_name('stc_surface_increasing_slope')
 stc_surface_increasing_aspect = create_tmp_map_name('stc_surface_increasing_aspect')
+stc_surface_increasing_profile_curvature = create_tmp_map_name('stc_surface_increasing_profile_curvature')
+stc_surface_increasing_tangential_curvature = create_tmp_map_name('stc_surface_increasing_tangential_curvature')
 #stc_surface_decreasing_elevation = create_tmp_map_name('stc_surface_decreasing_elevation')
 #stc_surface_decreasing_slope = create_tmp_map_name('stc_surface_decreasing_slope')
 #stc_surface_decreasing_aspect = create_tmp_map_name('stc_surface_decreasing_aspect')
@@ -135,7 +137,9 @@ run_command('v.patch', input=contours_level_points_stcs,
 run_command('v.surf.rst', input=stc_surface_increasing_points,
             elevation=stc_surface_increasing_elevation,
             slope=stc_surface_increasing_slope,
-            aspect=stc_surface_increasing_aspect)
+            aspect=stc_surface_increasing_aspect,
+            pcurvature=stc_surface_increasing_profile_curvature,
+            tcurvature=stc_surface_increasing_tangential_curvature)
 
 # patch the contours for visualization
 # alternative is to compute contours on the surface but these are the contours
@@ -204,6 +208,8 @@ run_command('r.grow.shrink', input=buffered_mask_intermediate, output=buffered_m
 
 speed_masked = create_tmp_map_name('speed_masked')
 direction_masked = create_tmp_map_name('direction_masked')
+profile_curvature_masked = create_tmp_map_name('profile_curvature_masked')
+tangential_curvature_masked = create_tmp_map_name('tangential_curvature_masked')
 
 mask_expression = []
 mask_template = '{target} = if({mask}, {source}, null())'
@@ -213,7 +219,17 @@ mask_expression.append(
 mask_expression.append(
     mask_template.format(
         source=direction, target=direction_masked, mask=buffered_mask))
+mask_expression.append(
+    mask_template.format(
+        source=stc_surface_increasing_profile_curvature,
+        target=profile_curvature_masked, mask=buffered_mask))
+mask_expression.append(
+    mask_template.format(
+        source=stc_surface_increasing_tangential_curvature,
+        target=tangential_curvature_masked, mask=buffered_mask))
 
 rmapcalc('\n'.join(mask_expression))
 
-run_command('r.colors', flags='e', color='sepia', map=speed_masked)
+run_command('r.colors', map=speed_masked, color='sepia', flags='e')
+run_command('r.colors', map=tangential_curvature_masked, rast=stc_surface_increasing_tangential_curvature)
+run_command('r.colors', map=profile_curvature_masked, rast=stc_surface_increasing_profile_curvature)
