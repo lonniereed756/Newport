@@ -3,6 +3,19 @@ spatio-temporal-contour-evolution
 
 Spatio-temporal contour evolution
 
+
+References and citation
+=======================
+
+Please cite this software as this paper:
+
+Petras, Vaclav, Helena Mitasova, and Anna Petrasova (2015).
+Mapping gradient fields of landform migration.
+Geomorphometry for Geosciences, p. 173-176
+Bogucki Wydawnictwo Naukowe, Adam Mickiewicz University in Poznan - Institute of Geoecology and Geoinformation
+Poznan, Poland. ISBN 978-83-7986-059-3. URL: http://geomorphometry.org/Petras2015
+
+
 License
 =======
 
