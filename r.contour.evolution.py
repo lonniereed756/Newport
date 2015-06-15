@@ -80,44 +80,29 @@ def create_tmp_map_name(name):
     return '{mod}_{map_}'.format(mod='rcontourevolution',
                                  map_=name)
 
-contours_level_points_stcs = []
-contours_level_stcs = []
+
+
+contours_level_rast_stcs = []
 
 # create contours from elevation for each year
 for i, elevation in enumerate(elevations):
     # create names for temporary maps
     contours = create_tmp_map_name(elevation + '_contours')
     level_str = str(level).replace('.', '_')
-    contours_level = create_tmp_map_name(elevation + '_contours_level_' + level_str)
-    contours_level_generalized = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_generalized')
-    contours_level_points = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_points')
-    contours_level_points_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_points_stc')
-    contours_level_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_stc')
+    contours_level_rast_stc = create_tmp_map_name(elevation + '_contours_level_rast_stc_' + level_str)
 
     # now it wold be enough to just compute one level but we will
     # eventually compute multiple levels anyway
     run_command('r.contour', input=elevation, output=contours, step=2)
-    # extract one contour level (height)
-    # TODO: would it be possible to extract contours without attribute table?
-    run_command('v.extract', input=contours, where='level=%f' % level,
-                output=contours_level)
-    # r.contour vertexes are too dense, generalize using some empirical values
-    run_command('v.generalize', input=contours_level, output=contours_level_generalized,
-                method='douglas', threshold=0.5)
-    # convert contour line to set of points using vertexes
-    run_command('v.to.points', input=contours_level_generalized,
-                output=contours_level_points, use='vertex')
-    # discard z coordinate (-t flag) and assign time to z (Space Time Cube)
-    run_command('v.transform', flags='t', input=contours_level_points,
-                output=contours_level_points_stc, zshift=years[i])
-    contours_level_points_stcs.append(contours_level_points_stc)
-    run_command('v.transform', flags='t', input=contours_level_generalized,
-                output=contours_level_stc, zshift=years[i])
-    contours_level_stcs.append(contours_level_stc)
+
+    run_command('v.to.rast', use='val', input=contours,
+                where='level=%f' % level, value=years[i],
+                output=contours_level_rast_stc)
+
+    contours_level_rast_stcs.append(contours_level_rast_stc)
 
 # create names for temporary maps
-stc_surface_increasing_points = create_tmp_map_name('stc_surface_increasing_points')
-stc_surface_increasing_countours = create_tmp_map_name('stc_surface_increasing_countours')
+stc_surface_increasing_rast_contours = create_tmp_map_name('stc_surface_increasing_rast_contours')
 stc_surface_increasing_elevation = create_tmp_map_name('stc_surface_increasing_elevation')
 stc_surface_increasing_slope = create_tmp_map_name('stc_surface_increasing_slope')
 stc_surface_increasing_aspect = create_tmp_map_name('stc_surface_increasing_aspect')
@@ -131,11 +116,12 @@ speed = create_tmp_map_name('speed')
 direction = create_tmp_map_name('direction')
 
 # patch points of the same original height (contour level) from all years together
-run_command('v.patch', input=contours_level_points_stcs,
-            output=stc_surface_increasing_points)
+run_command('r.patch', input=contours_level_rast_stcs,
+            output=stc_surface_increasing_rast_contours)
 # create a surface based on the points (in STC)
-run_command('v.surf.rst', input=stc_surface_increasing_points,
-            elevation=stc_surface_increasing_elevation,
+run_command('r.surf.contour', input=stc_surface_increasing_rast_contours,
+            output=stc_surface_increasing_elevation)
+run_command('r.slope.aspect', elevation=stc_surface_increasing_elevation,
             slope=stc_surface_increasing_slope,
             aspect=stc_surface_increasing_aspect,
             pcurvature=stc_surface_increasing_profile_curvature,
