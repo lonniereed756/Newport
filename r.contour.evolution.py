@@ -22,8 +22,7 @@
 #% keywords: visualization
 #% keywords: web
 #%end
-#%option G_OPT_R_INPUT
-#% key: raster
+#%option G_OPT_V_INPUT
 #% label: Name(s) of input raster map(s)
 #% description: Either this or strds option must be used to specify the input.
 #% multiple: yes
@@ -45,7 +44,13 @@
 #% multiple: no
 #% required: yes
 #%end
-
+#%option G_OPT_V_INPUT
+#% key: mask_vector
+#% label: Name(s) of input raster map(s)
+#% description: Either this or strds option must be used to specify the input.
+#% multiple: yes
+#% required: yes
+#%end
 
 # -*- coding: utf-8 -*-
 """
@@ -63,9 +68,10 @@ from grass.gunittest.gmodules import call_module
 from grass.script.raster import mapcalc as rmapcalc
 
 options, flags = gcore.parser()
-elevations = options['raster'].split(',')
+elevations = options['input'].split(',')
 years = options['years'].split(',')
 level = float(options['level'])
+mask_vector = options['mask_vector']
 
 # you have to delete old maps manualy now:
 #  g.mremove rast="*rcontourevolution_*" vect="*rcontourevolution_*" -f
@@ -94,19 +100,12 @@ for i, elevation in enumerate(elevations):
     contours_level_points_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_points_stc')
     contours_level_stc = create_tmp_map_name(elevation + '_contours_level_' + level_str + '_stc')
 
-    # now it wold be enough to just compute one level but we will
-    # eventually compute multiple levels anyway
-    run_command('r.contour', input=elevation, output=contours, step=2)
-    # extract one contour level (height)
-    # TODO: would it be possible to extract contours without attribute table?
-    run_command('v.extract', input=contours, where='level=%f' % level,
-                output=contours_level)
     # r.contour vertexes are too dense, generalize using some empirical values
-    run_command('v.generalize', input=contours_level, output=contours_level_generalized,
+    run_command('v.generalize', input=elevation, output=contours_level_generalized,
                 method='douglas', threshold=0.5)
     # convert contour line to set of points using vertexes
     run_command('v.to.points', input=contours_level_generalized,
-                output=contours_level_points, use='vertex')
+                output=contours_level_points, use='vertex', layer=-1)
     # discard z coordinate (-t flag) and assign time to z (Space Time Cube)
     run_command('v.transform', flags='t', input=contours_level_points,
                 output=contours_level_points_stc, zshift=years[i])
@@ -139,7 +138,8 @@ run_command('v.surf.rst', input=stc_surface_increasing_points,
             slope=stc_surface_increasing_slope,
             aspect=stc_surface_increasing_aspect,
             pcurvature=stc_surface_increasing_profile_curvature,
-            tcurvature=stc_surface_increasing_tangential_curvature)
+            tcurvature=stc_surface_increasing_tangential_curvature,
+            tension=10)
 
 # patch the contours for visualization
 # alternative is to compute contours on the surface but these are the contours
@@ -184,13 +184,8 @@ mask = create_tmp_map_name('mask')
 buffered_mask_intermediate = create_tmp_map_name('buffered_mask_intermediate')
 buffered_mask = create_tmp_map_name('buffered_mask')
 
-# r.mapcalc xor() takes only two arguments
-multixor = 'if({a}, 0, {o})'.format(a=' && '.join(expr_eval_values), o=' || '.join(expr_eval_values))
-expr_mask = "eval(" + ", ".join(expr_comp_values) + ")\n{m} = {mx}".format(m=mask, mx=multixor)
-
-print expr_mask
-rmapcalc(expr_mask)
-run_command('r.null', map=mask, setnull=0)
+run_command('v.to.rast', input=mask_vector, layer=-1, type='area', output=mask, use='val', value=1)
+run_command('r.null', map=mask, setnull=0)  # probably not needed for vector
 
 # region = parse_key_val(call_module('g.region', flags='g'))
 
@@ -231,5 +226,5 @@ mask_expression.append(
 rmapcalc('\n'.join(mask_expression))
 
 run_command('r.colors', map=speed_masked, color='sepia', flags='e')
-run_command('r.colors', map=tangential_curvature_masked, rast=stc_surface_increasing_tangential_curvature)
-run_command('r.colors', map=profile_curvature_masked, rast=stc_surface_increasing_profile_curvature)
+run_command('r.colors', map=tangential_curvature_masked, raster=stc_surface_increasing_tangential_curvature)
+run_command('r.colors', map=profile_curvature_masked, raster=stc_surface_increasing_profile_curvature)
