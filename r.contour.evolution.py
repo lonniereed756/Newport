@@ -59,7 +59,6 @@ import os
 import grass.script.core as gcore
 from grass.script.core import parse_command, parse_key_val
 from grass.pygrass.modules import Module as run_command
-from grass.gunittest.gmodules import call_module
 from grass.script.raster import mapcalc as rmapcalc
 
 options, flags = gcore.parser()
